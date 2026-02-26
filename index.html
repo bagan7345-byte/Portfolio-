@@ -1,249 +1,353 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Bomb Game Pro ☠️</title>
-<style>
-body {
-    margin: 0;
-    height: 100vh;
-    overflow: hidden;
-    background: radial-gradient(circle, #200000, #000000);
-    font-family: Arial, sans-serif;
-    color: white;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bomb Blast Falling Edition 💣</title>
+    <style>
+        :root {
+            --primary: #00f2ff;
+            --danger: #ff4d4d;
+            --bg: #0a0a0c;
+        }
 
-/* 🔥 Background Lucky Glow */
-.bg-name{
-    position:fixed;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    font-size:120px;
-    font-weight:bold;
-    color:rgba(255,0,0,0.08);
-    text-shadow:0 0 25px red;
-    animation:glow 2s infinite alternate;
-    pointer-events:none;
-    user-select:none;
-}
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: var(--bg);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            user-select: none;
+            touch-action: manipulation;
+        }
 
-@keyframes glow{
-    from{ text-shadow:0 0 20px red; }
-    to{ text-shadow:0 0 60px crimson; }
-}
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
 
-.panel {
-    position: fixed;
-    top: 10px;
-    left: 20px;
-    font-size: 16px;
-    z-index: 10;
-}
+        .header {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 2px solid var(--primary);
+            z-index: 100;
+        }
 
-input {
-    padding: 5px;
-    margin-bottom: 5px;
-}
+        .title {
+            font-size: 24px;
+            margin: 0;
+            color: var(--primary);
+            text-shadow: 0 0 15px var(--primary);
+        }
 
-button, select {
-    margin: 3px;
-    padding: 5px 10px;
-}
+        .controls {
+            margin-top: 5px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
 
-.leaderboard {
-    position: fixed;
-    top: 10px;
-    right: 20px;
-    width: 220px;
-    background: rgba(0,0,0,0.6);
-    padding: 10px;
-    border: 2px solid red;
-    border-radius: 8px;
-}
+        input, select, button {
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
 
-.leaderboard h3 {
-    margin-top: 0;
-    text-align: center;
-}
+        input { background: #222; color: white; border: 1px solid #444; width: 80px; }
+        
+        button {
+            cursor: pointer;
+            font-weight: bold;
+            background: var(--primary);
+            color: black;
+            transition: transform 0.1s;
+        }
+        button:active { transform: scale(0.9); }
 
-.bomb {
-    position: absolute;
-    top: -50px;
-    font-size: 40px;
-    cursor: pointer;
-    animation: fall linear forwards;
-    will-change: transform; /* 🚀 performance boost */
-}
+        #stopBtn { background: var(--danger); color: white; }
 
-@keyframes fall {
-    0% { transform: translateY(0) rotate(0deg); }
-    100% { transform: translateY(120vh) rotate(1080deg); }
-}
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 8px;
+            background: #111;
+            font-size: 16px;
+            font-weight: bold;
+            border-bottom: 1px solid #333;
+        }
 
-.blast {
-    position: absolute;
-    font-size: 25px;
-    animation: explode 0.6s ease-out forwards;
-}
+        .highlight { color: var(--primary); }
 
-@keyframes explode {
-    0% { transform: scale(1); opacity: 1; }
-    100% { transform: scale(6); opacity: 0; }
-}
+        #gameArea {
+            flex-grow: 1;
+            position: relative;
+            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+            cursor: crosshair;
+            overflow: hidden;
+        }
 
-.shake {
-    animation: shake 0.3s;
-}
+        .bomb {
+            position: absolute;
+            font-size: 50px; /* Thoda bada size */
+            cursor: pointer;
+            user-select: none;
+            filter: drop-shadow(0 0 10px rgba(255,0,0,0.5));
+            will-change: transform;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            touch-action: none;
+        }
 
-@keyframes shake {
-    0% { transform: translate(0,0); }
-    25% { transform: translate(-5px,5px); }
-    50% { transform: translate(5px,-5px); }
-    75% { transform: translate(-5px,-5px); }
-    100% { transform: translate(0,0); }
-}
-</style>
+        #warning {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--danger);
+            font-size: 28px;
+            font-weight: bold;
+            display: none;
+            pointer-events: none;
+            z-index: 10;
+            text-shadow: 0 0 10px black;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(0,0); }
+            25% { transform: translate(-8px, 8px); }
+            50% { transform: translate(8px, -8px); }
+            75% { transform: translate(-8px, -8px); }
+        }
+
+        .shake-effect {
+            animation: shake 0.3s ease-in-out;
+        }
+
+        .blast-text {
+            position: absolute;
+            color: #ffcc00;
+            font-weight: bold;
+            pointer-events: none;
+            font-size: 22px;
+            z-index: 50;
+            animation: fadeUp 0.6s forwards;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(-60px) scale(1.5); }
+        }
+
+        .leaderboard-section {
+            background: #000;
+            padding: 8px;
+            font-size: 14px;
+            border-top: 1px solid #333;
+        }
+    </style>
 </head>
 <body>
 
-<!-- 🔥 Lucky Background -->
-<div class="bg-name">Lucky 😎</div>
+<div class="container">
+    <div class="header">
+        <h1 class="title">BOMB FALL 💣</h1>
+        <div class="controls">
+            <input type="text" id="playerName" placeholder="Name" maxlength="10">
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+            <button id="startBtn">START</button>
+            <button id="stopBtn">STOP</button>
+        </div>
+    </div>
 
-<div class="panel">
-    👤 Name: <input type="text" id="playerName" placeholder="Enter name"><br>
+    <div class="stats-bar">
+        <div>SCORE: <span id="score" class="highlight">0</span></div>
+        <div>TIME: <span id="timer" class="highlight">0</span>s</div>
+        <div>MISSES: <span id="misses" style="color: red;">0</span>/10</div>
+    </div>
 
-    ☠️ Time: <span id="time">60</span>s |
-    💥 Score: <span id="score">0</span>
-    <br><br>
+    <div id="gameArea">
+        <div id="warning">⚠️ RUNNING OUT OF TIME! ⚠️</div>
+    </div>
 
-    Difficulty:
-    <select id="difficulty">
-        <option value="1200">Easy</option>
-        <option value="800" selected>Medium</option>
-        <option value="500">Hard</option>
-        <option value="300">Insane</option>
-    </select>
-
-    <button onclick="startGame()">Start</button>
-    <button onclick="stopGame()">Stop</button>
-    <button onclick="restartGame()">Restart</button>
-</div>
-
-<div class="leaderboard">
-    <h3>☠️ Leaderboard</h3>
-    <ul id="leaderList"></ul>
+    <div class="leaderboard-section">
+        <div id="leaderboard">High Score: <span id="highScore" class="highlight">0</span></div>
+    </div>
 </div>
 
 <script>
+    let score = 0;
+    let misses = 0;
+    let timeLeft = 0;
+    let gameActive = false;
+    let spawnTimer = null;
+    let countdownTimer = null;
+    let gameLoop = null;
+    let bombs = [];
+    
+    const configs = {
+        easy: { time: 60, spawnRate: 1300, fallSpeed: 2.5 },
+        medium: { time: 45, spawnRate: 900, fallSpeed: 4.5 },
+        hard: { time: 30, spawnRate: 600, fallSpeed: 7 }
+    };
 
-let score = 0;
-let timeLeft = 60;
-let gameActive = false;
-let bombInterval;
-let timer;
+    const gameArea = document.getElementById('gameArea');
+    const scoreEl = document.getElementById('score');
+    const timerEl = document.getElementById('timer');
+    const missesEl = document.getElementById('misses');
+    const highScoreEl = document.getElementById('highScore');
+    const warningEl = document.getElementById('warning');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
 
-function createBomb() {
-    if (!gameActive) return;
+    highScoreEl.innerText = localStorage.getItem('bombFallBest') || 0;
 
-    const bomb = document.createElement("div");
-    bomb.className = "bomb";
-    bomb.innerText = "💣";
-    bomb.style.left = Math.random() * 95 + "%";
+    function startGame() {
+        if (gameActive) return;
+        
+        const diff = document.getElementById('difficulty').value;
+        const config = configs[diff];
 
-    let duration = 2 + Math.random() * 2;
-    bomb.style.animationDuration = duration + "s";
-
-    document.body.appendChild(bomb);
-
-    /* ⚡ INSTANT REACTION */
-    bomb.addEventListener("pointerdown", function(e) {
-        if (!gameActive) return;
-
-        score++;
-        document.getElementById("score").innerText = score;
-
-        const blast = document.createElement("div");
-        blast.className = "blast";
-        blast.innerText = "🔥💥🔥";
-        blast.style.left = e.pageX - 20 + "px";
-        blast.style.top = e.pageY - 20 + "px";
-        document.body.appendChild(blast);
-
-        document.body.classList.add("shake");
-        setTimeout(() => document.body.classList.remove("shake"), 200);
-
-        bomb.remove();
-        setTimeout(() => blast.remove(), 600);
-    });
-
-    setTimeout(() => bomb.remove(), duration * 1000);
-}
-
-function startGame() {
-    const name = document.getElementById("playerName").value.trim();
-    if (name === "") {
-        alert("Enter your name first 😤");
-        return;
+        score = 0;
+        misses = 0;
+        timeLeft = config.time;
+        gameActive = true;
+        bombs = [];
+        
+        scoreEl.innerText = score;
+        timerEl.innerText = timeLeft;
+        missesEl.innerText = misses;
+        
+        startBtn.disabled = true;
+        
+        gameLoop = requestAnimationFrame(updateGame);
+        spawnTimer = setInterval(() => spawnBomb(config.fallSpeed), config.spawnRate);
+        
+        countdownTimer = setInterval(() => {
+            timeLeft--;
+            timerEl.innerText = timeLeft;
+            if (timeLeft <= 5 && timeLeft > 0) warningEl.style.display = 'block';
+            if (timeLeft <= 0) endGame("TIME'S UP!");
+        }, 1000);
     }
 
-    if (gameActive) return;
-    gameActive = true;
+    function handleBombBlast(e, bombObj) {
+        if (!gameActive) return;
+        e.preventDefault();
+        e.stopPropagation();
 
-    let spawnSpeed = document.getElementById("difficulty").value;
-    bombInterval = setInterval(createBomb, spawnSpeed);
+        score += 10;
+        scoreEl.innerText = score;
 
-    timer = setInterval(() => {
-        timeLeft--;
-        document.getElementById("time").innerText = timeLeft;
+        // Get coordinates for effect
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-        if (timeLeft <= 0) {
-            stopGame();
-            saveScore(name, score);
-            alert("☠️ Time Up! " + name + " Score: " + score);
+        createBlastEffect(clientX, clientY);
+        bombObj.el.remove();
+        bombs = bombs.filter(b => b !== bombObj);
+    }
+
+    function spawnBomb(speed) {
+        if (!gameActive) return;
+
+        const bomb = document.createElement('div');
+        bomb.className = 'bomb';
+        bomb.innerText = '💣';
+        
+        const x = Math.random() * (gameArea.clientWidth - 70);
+        const y = -70; 
+        
+        bomb.style.left = `${x}px`;
+        bomb.style.top = `${y}px`;
+
+        const bombObj = {
+            el: bomb,
+            y: y,
+            speed: speed + (Math.random() * 2)
+        };
+
+        // Multi-touch and Mouse support
+        bomb.addEventListener('touchstart', (e) => handleBombBlast(e, bombObj), {passive: false});
+        bomb.addEventListener('mousedown', (e) => handleBombBlast(e, bombObj));
+
+        gameArea.appendChild(bomb);
+        bombs.push(bombObj);
+    }
+
+    function updateGame() {
+        if (!gameActive) return;
+
+        for (let i = bombs.length - 1; i >= 0; i--) {
+            let b = bombs[i];
+            b.y += b.speed;
+            b.el.style.transform = `translateY(${b.y}px)`; // Faster than top
+
+            if (b.y > gameArea.clientHeight) {
+                b.el.remove();
+                bombs.splice(i, 1);
+                misses++;
+                missesEl.innerText = misses;
+                
+                gameArea.classList.add('shake-effect');
+                setTimeout(() => gameArea.classList.remove('shake-effect'), 200);
+
+                if (misses >= 10) {
+                    endGame("TOO MANY MISSES (10/10)!");
+                }
+            }
         }
-    }, 1000);
-}
 
-function stopGame() {
-    gameActive = false;
-    clearInterval(bombInterval);
-    clearInterval(timer);
-}
+        gameLoop = requestAnimationFrame(updateGame);
+    }
 
-function restartGame() {
-    stopGame();
-    score = 0;
-    timeLeft = 60;
-    document.getElementById("score").innerText = 0;
-    document.getElementById("time").innerText = 60;
-    document.getElementById("playerName").value = "";
-    document.querySelectorAll(".bomb").forEach(b => b.remove());
-}
+    function createBlastEffect(x, y) {
+        const text = document.createElement('div');
+        text.className = 'blast-text';
+        text.innerText = '💥 BOOM!';
+        text.style.left = `${x - 40}px`;
+        text.style.top = `${y - 40}px`;
+        document.body.appendChild(text);
+        setTimeout(() => text.remove(), 600);
+    }
 
-/* Leaderboard */
-function saveScore(name, newScore) {
-    let scores = JSON.parse(localStorage.getItem("leaderboard")) || [];
-    scores.push({name: name, score: newScore});
-    scores.sort((a,b) => b.score - a.score);
-    scores = scores.slice(0,5);
-    localStorage.setItem("leaderboard", JSON.stringify(scores));
-    displayLeaderboard();
-}
+    function endGame(reason) {
+        gameActive = false;
+        clearInterval(spawnTimer);
+        clearInterval(countdownTimer);
+        cancelAnimationFrame(gameLoop);
+        
+        warningEl.style.display = 'none';
+        
+        const best = localStorage.getItem('bombFallBest') || 0;
+        if (score > best) {
+            localStorage.setItem('bombFallBest', score);
+            highScoreEl.innerText = score;
+        }
 
-function displayLeaderboard() {
-    let scores = JSON.parse(localStorage.getItem("leaderboard")) || [];
-    let list = document.getElementById("leaderList");
-    list.innerHTML = "";
-    scores.forEach((player) => {
-        let li = document.createElement("li");
-        li.innerText = "☠️ " + player.name + " - " + player.score;
-        list.appendChild(li);
-    });
-}
+        setTimeout(() => {
+            alert(`${reason}\nFinal Score: ${score}`);
+            bombs.forEach(b => b.el.remove());
+            bombs = [];
+            startBtn.disabled = false;
+        }, 100);
+    }
 
-displayLeaderboard();
+    startBtn.onclick = startGame;
+    stopBtn.onclick = () => endGame("GAME STOPPED");
 
 </script>
-
 </body>
 </html>
